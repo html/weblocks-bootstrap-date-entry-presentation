@@ -37,7 +37,9 @@
 
         (values t t 
                 (eval `(encode-universal-time 
-                         0 
+                         ,(if (aref time-elements 3)
+                            (parse-integer (aref time-elements 3))
+                            0) 
                          ,(parse-integer (aref time-elements 1))
                          ,hour
                          ,@date-elements)))))))
@@ -69,7 +71,9 @@
       (<:div :class "input-append bootstrap-timepicker-component"
              (<:input :id time-input-id :type "text" :class "input-small" 
                       :value (when value 
-                               (metatilities:format-date "%I:%M %p" value))
+                               (if (bootstrap-date-entry-presentation-show-seconds presentation)
+                                 (metatilities:format-date "%I:%M:%S %p" value)
+                                 (metatilities:format-date "%I:%M %p" value)))
                       :name (format nil "~A[time]" field-name))
              (<:span :class "add-on"
                      (<:i :class "icon-time"))))
