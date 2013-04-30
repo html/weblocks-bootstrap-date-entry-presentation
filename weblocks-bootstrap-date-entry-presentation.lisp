@@ -18,11 +18,14 @@
          (time (request-parameter (format nil "~A[time]" name)))
          (hour))
     (multiple-value-bind (date-matched date-elements) (cl-ppcre:scan-to-strings "(\\d+)\\.(\\d+)\\.(\\d+)" date)
-      (multiple-value-bind (time-matched time-elements) (cl-ppcre:scan-to-strings "(\\d+):(\\d+)\\s(AM|PM)" time)
+      (multiple-value-bind (time-matched time-elements) (cl-ppcre:scan-to-strings "^(\\d+):(\\d+)(:(\\d+))?\\s(AM|PM)$" time)
+        (when (or (not date-matched)
+                  (not time-matched))
+          (return-from parse-view-field-value (values t nil nil)))
         (setf date-elements (loop for i being the elements of date-elements collect (parse-integer i)))
 
         (setf hour (+ (parse-integer (aref time-elements 0))
-                      (if (string= (aref time-elements 2) "PM")
+                      (if (string= (aref time-elements 4) "PM")
                         12 
                         0)))
 
