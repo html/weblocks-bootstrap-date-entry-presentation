@@ -40,7 +40,7 @@
                          ,@date-elements)))))))
 
 (defclass bootstrap-date-entry-presentation (date-entry-presentation)
-  ())
+  ((show-second :initarg :show-seconds :accessor bootstrap-date-entry-presentation-show-seconds)))
 
 (defmethod render-view-field-value (value 
                                      (presentation bootstrap-date-entry-presentation)
@@ -58,13 +58,15 @@
     (with-yaclml 
       (<:div :class "input-append date" :id *presentation-dom-id* 
              (<:input :class "input-small" :size "10" :type "text" :id date-input-id 
-                      :value (metatilities:format-date "%d.%m.%Y" value)
+                      :value (when value 
+                               (metatilities:format-date "%d.%m.%Y" value))
                       :name (format nil "~A[date]" field-name))
              (<:span :class "add-on"
                      (<:i :class "icon-th")))
       (<:div :class "input-append bootstrap-timepicker-component"
              (<:input :id time-input-id :type "text" :class "input-small" 
-                      :value (metatilities:format-date "%I:%M %p" value)
+                      :value (when value 
+                               (metatilities:format-date "%I:%M %p" value))
                       :name (format nil "~A[time]" field-name))
              (<:span :class "add-on"
                      (<:i :class "icon-time"))))
@@ -99,4 +101,13 @@
                 (ps:chain 
                   (j-query (ps:LISP (format nil "#~A" time-input-id)))
                   (timepicker 
-                    (ps:create "defaultTime" "value")))))))))))
+                    (eval 
+                      (ps:LISP 
+                        (format 
+                          nil 
+                          "(~A)"
+                          (cl-json:encode-json-plist-to-string 
+                            (append 
+                              (list "defaultTime" "value")
+                              (when (bootstrap-date-entry-presentation-show-seconds presentation)
+                                (list "showSeconds" t)))))))))))))))))

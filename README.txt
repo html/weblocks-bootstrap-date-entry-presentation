@@ -20,3 +20,6 @@ Additional files dependencies are required -
 - timepicker.css from https://github.com/jdewit/bootstrap-timepicker should be in pub/stylesheets/
 - datepicker.css from https://github.com/eternicode/bootstrap-datepicker should be in pub/stylesheets/
 - contents of js/ folder from https://github.com/eternicode/bootstrap-datepicker should be in pub/scripts/bootstrap-datepicker/
+
+!!! Warning 
+At the time it works with bootstrap-timepicker revision 796688ba405916186aeae4326165b219f4c6659d and does not work with latest revision.
