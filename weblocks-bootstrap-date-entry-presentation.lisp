@@ -45,7 +45,7 @@
                          ,@date-elements)))))))
 
 (defclass bootstrap-date-entry-presentation (date-entry-presentation)
-  ((show-second :initarg :show-seconds :accessor bootstrap-date-entry-presentation-show-seconds)))
+  ((show-seconds :initform nil :initarg :show-seconds :accessor bootstrap-date-entry-presentation-show-seconds)))
 
 (defmethod render-view-field-value (value 
                                      (presentation bootstrap-date-entry-presentation)
