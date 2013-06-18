@@ -55,25 +55,31 @@
                                      &rest args &key intermediate-values field-info &allow-other-keys)
   (declare (special *presentation-dom-id*))
 
-  (let ((date-input-id (format nil "~A-date" *presentation-dom-id*))
-        (time-input-id (format nil "~A-time" *presentation-dom-id*))
-        (field-name (if field-info
-                      (attributize-view-field-name field-info)
-                      (attributize-name (view-field-slot-name field)))))
+  (let* ((name (attributize-name (view-field-slot-name field)))
+         (date (request-parameter (format nil "~A[date]" name)))
+         (time (request-parameter (format nil "~A[time]" name)))
+         (date-input-id (format nil "~A-date" *presentation-dom-id*))
+         (time-input-id (format nil "~A-time" *presentation-dom-id*))
+         (field-name (if field-info
+                       (attributize-view-field-name field-info)
+                       (attributize-name (view-field-slot-name field)))))
     (with-yaclml 
       (<:div :class "input-append date" :id *presentation-dom-id* 
              (<:input :class "input-small" :size "10" :type "text" :id date-input-id 
-                      :value (when value 
-                               (metatilities:format-date "%d.%m.%Y" value))
+                      :value (or date 
+                                 (when value 
+                                   (metatilities:format-date "%d.%m.%Y" value)))
                       :name (format nil "~A[date]" field-name))
              (<:span :class "add-on"
                      (<:i :class "icon-th")))
+      (<:as-is "&nbsp;")
       (<:div :class "input-append bootstrap-timepicker-component"
              (<:input :id time-input-id :type "text" :class "input-small" 
-                      :value (when value 
-                               (if (bootstrap-date-entry-presentation-show-seconds presentation)
-                                 (metatilities:format-date "%I:%M:%S %p" value)
-                                 (metatilities:format-date "%I:%M %p" value)))
+                      :value (or time 
+                                 (when value 
+                                   (if (bootstrap-date-entry-presentation-show-seconds presentation)
+                                     (metatilities:format-date "%I:%M:%S %p" value)
+                                     (metatilities:format-date "%I:%M %p" value))))
                       :name (format nil "~A[time]" field-name))
              (<:span :class "add-on"
                      (<:i :class "icon-time"))))
