@@ -3,7 +3,8 @@
         #:weblocks-selenium-tests 
         #:selenium 
         #:weblocks-utils 
-        #:weblocks-bootstrap-date-entry-presentation))
+        #:weblocks-bootstrap-date-entry-presentation 
+        #:weblocks-twitter-bootstrap-application-tests))
 
 (in-package :weblocks-bootstrap-date-entry-presentation-tests)
 
@@ -24,4 +25,13 @@
                          (answer widget t)) "back"))))
     (do-page widget)))
 
-(weblocks-twitter-bootstrap-application-tests::define-bootstrap-demo-action "Date entry demos" #'bootstrap-date-entry-demonstration-action)
+(define-bootstrap-demo-action "Date entry demos" #'bootstrap-date-entry-demonstration-action)
+
+(def-test-suite weblocks-bootstrap-date-entry-presentation-tests)
+
+(deftest shows-date-entry ()
+  (with-new-or-existing-selenium-session-on-bootstrap-site 
+    (do-click-and-wait "link=Date entry demos")
+    (do-screen-state-test "bootstrap/date-entry")
+    (do-click-and-wait "name=cancel")))
+

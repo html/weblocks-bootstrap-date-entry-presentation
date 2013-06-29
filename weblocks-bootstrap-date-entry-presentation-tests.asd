@@ -2,7 +2,7 @@
 
 (asdf:defsystem #:weblocks-bootstrap-date-entry-presentation-tests
   :serial t
-  :version "0.0.1"
+  :version "0.0.2"
   :description "Tests for weblocks-bootstrap-date-entry-presentation"
   :author "Olexiy Zamkoviy <olexiy.z@gmail.com>"
   :license "LLGPL"
