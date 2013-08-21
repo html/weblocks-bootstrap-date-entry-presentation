@@ -22,7 +22,7 @@
         (when (or (not date-matched)
                   (not time-matched))
           (return-from parse-view-field-value (values t nil nil)))
-        (setf date-elements (loop for i being the elements of date-elements collect (parse-integer i)))
+        (setf date-elements (loop for i across date-elements collect (parse-integer i)))
 
         (setf hour (+ (parse-integer (aref time-elements 0))
                       (if (string= (aref time-elements 4) "PM")
@@ -46,6 +46,8 @@
 
 (defclass bootstrap-date-entry-presentation (date-entry-presentation)
   ((show-seconds :initform nil :initarg :show-seconds :accessor bootstrap-date-entry-presentation-show-seconds)))
+
+(defparameter *datepicker-locale-file* "/pub/scripts/bootstrap-datepicker-locales/bootstrap-datepicker.ru.js")
 
 (defmethod render-view-field-value (value 
                                      (presentation bootstrap-date-entry-presentation)
@@ -83,14 +85,22 @@
                       :name (format nil "~A[time]" field-name))
              (<:span :class "add-on"
                      (<:i :class "icon-time"))))
+
+  (weblocks-utils:require-assets 
+    "https://raw.github.com/html/weblocks-assets/master/bootstrap-timepicker/0.2.3/")
+
+  (weblocks-utils:require-assets 
+    "https://raw.github.com/html/weblocks-assets/master/bootstrap-datepicker/1.2.0/")
+
     (send-script 
       (ps:ps 
         (with-styles 
-          "/pub/stylesheets/datepicker.css"
+          (ps:LISP (weblocks-utils:prepend-webapp-path 
+                     "/pub/stylesheets/bootstrap-datepicker.css"))
           (lambda ()
             (with-scripts 
-              "/pub/scripts/bootstrap-datepicker/bootstrap-datepicker.js"
-              "/pub/scripts/bootstrap-datepicker/locales/bootstrap-datepicker.ru.js"
+              (ps:LISP (weblocks-utils:prepend-webapp-path "/pub/scripts/bootstrap-datepicker.js"))
+              (ps:LISP (weblocks-utils:prepend-webapp-path *datepicker-locale-file*))
               (lambda ()
                 (ps:chain 
                   (j-query (ps:LISP (format nil "#~A" date-input-id)))
@@ -106,10 +116,10 @@
                                      (datepicker "show")))))))))
 
         (with-styles 
-          "/pub/stylesheets/timepicker.css"
+          (ps:LISP (weblocks-utils:prepend-webapp-path "/pub/stylesheets/bootstrap-timepicker.css"))
           (lambda ()
             (with-scripts 
-              "/pub/scripts/bootstrap-timepicker.js"
+              (ps:LISP (weblocks-utils:prepend-webapp-path "/pub/scripts/bootstrap-timepicker.js"))
               (lambda ()
                 (ps:chain 
                   (j-query (ps:LISP (format nil "#~A" time-input-id)))
