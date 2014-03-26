@@ -2,7 +2,7 @@
 
 (asdf:defsystem #:weblocks-bootstrap-date-entry-presentation
   :serial t
-  :version "0.0.7"
+  :version (:read-from-file "version.lisp-expr")
   :description "Bootstrap date/time picker form presentation for weblocks"
   :author "Olexiy Zamkoviy <olexiy.z@gmail.com>"
   :license "LLGPL"
