@@ -53,6 +53,22 @@
                              (render-link 
                                (date-entry-action "Input with bootstrap date entry without time showing" (bootstrap-date-entry :show-time-p nil))
                                "Date only (without time showing)")
+                             (<:br)
+                             (render-link 
+                               (date-entry-action "Date entry with custom datepicker options" 
+                                                  (bootstrap-date-entry 
+                                                    :datepicker-options (list :autoclose t
+                                                                              :format "dd.mm.yyyy" 
+                                                                              "startView" 2)
+                                                    :show-time-p nil))
+                               "Date with custom datepicker options")
+                             (<:br)
+                             (render-link 
+                               (date-entry-action "Date entry with default date set" 
+                                                  (bootstrap-date-entry 
+                                                    :default-date "1970-01-01"
+                                                    :show-time-p nil))
+                               "Date with custom initial date")
                              (<:hr)
                              (render-link (lambda (&rest args)
                                             (answer render-links))
@@ -76,13 +92,13 @@
     (do-click-and-wait "link=Date entry demos")
     (do-click-and-wait "link=Default configuration (date, time without seconds showing)")
     (do-click-and-wait "name=date[date]")
-    (do-click-and-wait "css=.day.active")
+    (do-click-and-wait "css=td:contains(10)")
     (do-click-and-wait "css=.bootstrap-timepicker-component .add-on")
     (do-click-and-wait "css=.show-meridian a:first")
     (do-click-and-wait "name=submit")
     (is 
       (integerp (ppcre:scan 
-                  (format nil "which is date ~A 02:00:00 AM" (metatilities:format-date "%d.%m.%Y" (get-universal-time)))
+                  (format nil "which is date ~A 02:00:00 AM" (metatilities:format-date "10.%m.%Y" (get-universal-time)))
                   (do-get-text "css=.modal-body"))))))
 
 (deftest parses-date-entry-with-seconds-showing ()
@@ -90,14 +106,14 @@
     (do-click-and-wait "link=Date entry demos")
     (do-click-and-wait "link=Date and time with seconds showing")
     (do-click-and-wait "name=date[date]")
-    (do-click-and-wait "css=.day.active")
+    (do-click-and-wait "css=td:contains(10)")
     (do-click-and-wait "css=.bootstrap-timepicker-component .add-on")
     (do-click-and-wait "css=.show-meridian a:nth(2)")
     (do-click-and-wait "name=submit")
     (is 
       (integerp (ppcre:scan 
                   (format nil "which is date ~A 01:00:15 AM" 
-                          (metatilities:format-date "%d.%m.%Y" (get-universal-time)))
+                          (metatilities:format-date "10.%m.%Y" (get-universal-time)))
                   (do-get-text "css=.modal-body"))))))
 
 (deftest parses-date-entry-without-time-showing ()
@@ -105,10 +121,37 @@
     (do-click-and-wait "link=Date entry demos")
     (do-click-and-wait "link=Date only (without time showing)")
     (do-click-and-wait "name=date[date]")
-    (do-click-and-wait "css=.day.active")
+    (do-click-and-wait "css=td:contains(10)")
     (do-click-and-wait "name=submit")
     (is 
       (integerp (ppcre:scan 
                   (format nil "which is date ~A 12:00:00 AM" 
-                          (metatilities:format-date "%d.%m.%Y" (get-universal-time)))
+                          (metatilities:format-date "10.%m.%Y" (get-universal-time)))
+                  (do-get-text "css=.modal-body"))))))
+
+(deftest parses-date-entry-with-custom-datepicker-options ()
+  (with-new-or-existing-selenium-session-on-bootstrap-site 
+    (do-click-and-wait "link=Date entry demos")
+    (do-click-and-wait "link=Date with custom datepicker options")
+    (do-click-and-wait "name=date[date]")
+    (do-click-and-wait "css=.year.active")
+    (do-click-and-wait "css=.month:first")
+    (do-click-and-wait "css=td:contains(10):first")
+    (do-click-and-wait "name=submit")
+    (is 
+      (integerp (ppcre:scan 
+                  (format nil "which is date ~A 12:00:00 AM" 
+                          (metatilities:format-date "10.01.%Y" (get-universal-time)))
+                  (do-get-text "css=.modal-body"))))))
+
+(deftest parses-date-entry-with-custom-initial-date ()
+  (with-new-or-existing-selenium-session-on-bootstrap-site 
+    (do-click-and-wait "link=Date entry demos")
+    (do-click-and-wait "link=Date with custom initial date")
+    (do-click-and-wait "name=date[date]")
+    (do-click-and-wait "css=td:contains(10):first")
+    (do-click-and-wait "name=submit")
+    (is 
+      (integerp (ppcre:scan 
+                  (format nil "which is date ~A 12:00:00 AM" "10.01.1970")
                   (do-get-text "css=.modal-body"))))))

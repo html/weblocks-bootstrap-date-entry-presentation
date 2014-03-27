@@ -51,7 +51,12 @@
   ((show-time-p :initform t 
                 :initarg :show-time-p 
                 :accessor bootstrap-date-entry-presentation-show-time-p)
-   (show-seconds-p :initform nil :initarg :show-seconds-p :accessor bootstrap-date-entry-presentation-show-seconds-p)))
+   (show-seconds-p :initform nil :initarg :show-seconds-p :accessor bootstrap-date-entry-presentation-show-seconds-p)
+   (datepicker-options :initform (list :autoclose t
+                                       :format "dd.mm.yyyy")
+                       :initarg :datepicker-options)
+   (default-date :initform (metatilities:format-date "%Y-%m-%d" (get-universal-time))
+                 :initarg :default-date)))
 
 (defparameter *datepicker-locale-file* "/pub/scripts/bootstrap-datepicker-locales/bootstrap-datepicker.ru.js")
 
@@ -63,77 +68,103 @@
                                      &rest args &key intermediate-values field-info &allow-other-keys)
   (declare (special *presentation-dom-id*))
 
-  (let* ((name (attributize-name (view-field-slot-name field)))
-         (date (request-parameter (format nil "~A[date]" name)))
-         (time (request-parameter (format nil "~A[time]" name)))
-         (date-input-id (format nil "~A-date" *presentation-dom-id*))
-         (time-input-id (format nil "~A-time" *presentation-dom-id*))
-         (field-name (if field-info
-                       (attributize-view-field-name field-info)
-                       (attributize-name (view-field-slot-name field)))))
-    (with-yaclml 
-      (<:div :class "input-append date" :id *presentation-dom-id* 
-             (<:input :class "input-small" :size "10" :type "text" :id date-input-id 
-                      :value (or date 
-                                 (when value 
-                                   (metatilities:format-date "%d.%m.%Y" value)))
-                      :name (format nil "~A[date]" field-name))
-             (<:span :class "add-on"
-                     (<:i :class "icon-th")))
-      (when (bootstrap-date-entry-presentation-show-time-p presentation)
-        (<:as-is "&nbsp;")
-        (<:div :class "input-append bootstrap-timepicker-component"
-               (<:input :id time-input-id :type "text" :class "input-small" 
-                        :value (or time 
+  (with-slots (datepicker-options default-date) presentation
+    (let* ((name (attributize-name (view-field-slot-name field)))
+           (date (request-parameter (format nil "~A[date]" name)))
+           (time (request-parameter (format nil "~A[time]" name)))
+           (date-input-id (format nil "~A-date" *presentation-dom-id*))
+           (time-input-id (format nil "~A-time" *presentation-dom-id*))
+           (field-name (if field-info
+                         (attributize-view-field-name field-info)
+                         (attributize-name (view-field-slot-name field)))))
+      (with-yaclml 
+        (<:div :class "input-append date" :id *presentation-dom-id* 
+               (<:input :class "input-small" :size "10" :type "text" :id date-input-id 
+                        :value (or date 
                                    (when value 
-                                     (if (bootstrap-date-entry-presentation-show-seconds-p presentation)
-                                       (metatilities:format-date "%I:%M:%S %p" value)
-                                       (metatilities:format-date "%I:%M %p" value))))
-                        :name (format nil "~A[time]" field-name))
+                                     (metatilities:format-date "%d.%m.%Y" value)))
+                        :name (format nil "~A[date]" field-name))
                (<:span :class "add-on"
-                       (<:i :class "icon-time")))))
-
-    (weblocks-utils:require-assets 
-      "https://raw.github.com/html/weblocks-assets/master/bootstrap-datepicker/1.2.0/")
-
-    (send-script 
-      (ps:ps 
-        (weblocks-utils:ps-with-scripts-and-styles 
-          ("/pub/scripts/bootstrap-datepicker.js" *datepicker-locale-file*)
-          ("/pub/stylesheets/bootstrap-datepicker.css")
-          (ps:chain 
-            (j-query (ps:LISP (format nil "#~A" date-input-id)))
-            (datepicker 
-              (ps:create 
-                :autoclose t
-                :format "dd.mm.yyyy")))
-          (ps:chain 
-            (j-query (ps:LISP (format nil "#~A" *presentation-dom-id*)))
-            (find ".icon-th")
-            (click (lambda ()
-                     (ps:chain (j-query (ps:LISP (format nil "#~A" date-input-id)))
-                               (datepicker "show"))))))))
-
-    (when (bootstrap-date-entry-presentation-show-time-p presentation)
+                       (<:i :class "icon-th")))
+        (when (bootstrap-date-entry-presentation-show-time-p presentation)
+          (<:as-is "&nbsp;")
+          (<:div :class "input-append bootstrap-timepicker-component"
+                 (<:input :id time-input-id :type "text" :class "input-small" 
+                          :value (or time 
+                                     (when value 
+                                       (if (bootstrap-date-entry-presentation-show-seconds-p presentation)
+                                         (metatilities:format-date "%I:%M:%S %p" value)
+                                         (metatilities:format-date "%I:%M %p" value))))
+                          :name (format nil "~A[time]" field-name))
+                 (<:span :class "add-on"
+                         (<:i :class "icon-time")))))
 
       (weblocks-utils:require-assets 
-        "https://raw.github.com/html/weblocks-assets/master/bootstrap-timepicker/0.2.3/")
+        "https://raw.github.com/html/weblocks-assets/master/bootstrap-datepicker/1.2.0/")
 
       (send-script 
         (ps:ps 
           (weblocks-utils:ps-with-scripts-and-styles 
-            ("/pub/scripts/bootstrap-timepicker.js")
-            ("/pub/stylesheets/bootstrap-timepicker.css")
-            (ps:chain 
-              (j-query (ps:LISP (format nil "#~A" time-input-id)))
-              (timepicker 
-                (eval 
-                  (ps:LISP 
-                    (format 
-                      nil 
-                      "(~A)"
-                      (cl-json:encode-json-plist-to-string 
-                        (append 
-                          (list "defaultTime" "value")
-                          (when (bootstrap-date-entry-presentation-show-seconds-p presentation)
-                            (list "showSeconds" t)))))))))))))))
+            ("/pub/scripts/bootstrap-datepicker.js" *datepicker-locale-file*)
+            ("/pub/stylesheets/bootstrap-datepicker.css")
+            (let* ((date-elem (ps:chain 
+                                (j-query (ps:LISP (format nil "#~A" date-input-id)))
+                                (parent)))
+                   (set-default-date (lambda ()
+                                       (unless (ps:chain date-elem (data "date"))
+                                         (ps:chain date-elem (data "date" (ps:new ((ps:LISP (intern "Date")) (ps:LISP default-date)))))))))
+
+              (ps:chain 
+                date-elem
+                (datepicker 
+                  (ps:LISP `(ps:create 
+                              ,@datepicker-options))))
+
+              (ps:chain date-elem (on "click" set-default-date))
+              (ps:chain date-elem (on "keydown" set-default-date))
+              (ps:chain date-elem (on "keyup" set-default-date))
+
+              (ps:chain 
+                (j-query (ps:LISP (format nil "#~A" *presentation-dom-id*)))
+                (find ".icon-th")
+                (click (lambda ()
+                         (set-default-date)
+                         (ps:chain date-elem (datepicker "show")))))
+              (ps:LISP 
+                (when default-date 
+                  `(let ((interval))
+                     (setf interval 
+                           (set-interval 
+                             (lambda ()
+                               (when (and (not (ps:chain date-elem (find "input:first") (val)))
+                                          (ps:chain date-elem (data "datepicker")))
+                                 (clear-interval interval)
+                                 (ps:chain date-elem 
+                                           (data "datepicker") 
+                                           (update (ps:new (,(intern "Date") ,default-date))))
+                                 (ps:chain date-elem (find "input:first") (val ""))))
+                             100)))))))))
+
+      (when (bootstrap-date-entry-presentation-show-time-p presentation)
+
+        (weblocks-utils:require-assets 
+          "https://raw.github.com/html/weblocks-assets/master/bootstrap-timepicker/0.2.3/")
+
+        (send-script 
+          (ps:ps 
+            (weblocks-utils:ps-with-scripts-and-styles 
+              ("/pub/scripts/bootstrap-timepicker.js")
+              ("/pub/stylesheets/bootstrap-timepicker.css")
+              (ps:chain 
+                (j-query (ps:LISP (format nil "#~A" time-input-id)))
+                (timepicker 
+                  (eval 
+                    (ps:LISP 
+                      (format 
+                        nil 
+                        "(~A)"
+                        (cl-json:encode-json-plist-to-string 
+                          (append 
+                            (list "defaultTime" "value")
+                            (when (bootstrap-date-entry-presentation-show-seconds-p presentation)
+                              (list "showSeconds" t))))))))))))))))
