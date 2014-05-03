@@ -105,7 +105,7 @@
       (send-script 
         (ps:ps 
           (weblocks-utils:ps-with-scripts-and-styles 
-            ("/pub/scripts/bootstrap-datepicker.js" *datepicker-locale-file*)
+            ("/pub/scripts/bootstrap-datepicker.js" (ps:LISP *datepicker-locale-file*))
             ("/pub/stylesheets/bootstrap-datepicker.css")
             (let* ((date-elem (ps:chain 
                                 (j-query (ps:LISP (format nil "#~A" date-input-id)))
