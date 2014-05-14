@@ -9,7 +9,8 @@
   :depends-on (#:weblocks
                #:yaclml 
                #:parenscript 
-               #:metatilities)
+               #:metatilities
+               #:weblocks-utils)
   :components ((:file "package")
                (:file "weblocks-bootstrap-date-entry-presentation")))
 
